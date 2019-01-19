@@ -27,13 +27,16 @@ struct
   uint32_t unknown;
 
 } stat = { 0, 0, 0, 0, 0, 0, 0, 0};
-
-
+int in1 = 4;
+int in2 = 16;
+boolean doorstate;
+boolean olddorstate = false;
+void setup(){
+Serial.begin(115200);
 // connect to wifi.
 WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 Serial.print("connecting");
 while (WiFi.status() != WL_CONNECTED) {
-  Serial.begin(115200);
   Serial.print(".");
   delay(500);
 }
@@ -42,11 +45,11 @@ Serial.print("connected: ");
 Serial.println(WiFi.localIP());
 
 Firebase.begin(FIREBASE_HOST, FIREBASE_AUTH);
-}
 pinMode(LIGHTPIN, OUTPUT); 
+}
+
 double setTemp() {
-  InitialTemp = Firebase.getFloat("thermostat");
-  return InitialTemp;
+  return  Firebase.getFloat("devices/913/temperature_goal");
 }
 
 void turnOn() {
@@ -89,8 +92,7 @@ void loop() {
       break;
   }
 
-  adoorstate = analogRead(analogIn);
-  doorstate = digitalRead(SensorPin);
+  doorstate = digitalRead(SENSORPIN);
   if (doorstate == HIGH)
   {
     
@@ -110,14 +112,14 @@ void loop() {
   Serial.print(",\t");
   Serial.print(stop - start);
   Serial.println();
-  cel = DHT.temperature;
-  faren = (cel * 1.8) + 32;
+  float cel = DHT.temperature;
+  float faren = (cel * 1.8) + 32;
   delay(300);
 
   double Lowerbound = setTemp() - 2;
   double Upperbound = setTemp() + 2;
 
-  Serial.println (Firebase.getFloat("thermostat"));
+  Serial.println (Firebase.getFloat("devices/913/temperature_goal"));
 
   if (faren > Upperbound) {
     Serial.println("increase temp");
@@ -129,10 +131,10 @@ void loop() {
   }
 
 
-
+float oldfaren = 0.0;
   if (abs(faren - oldfaren) >= 1 && abs(faren - oldfaren) < 5 && faren < 150 && faren > -50) {
 
-    Firebase.setFloat("temperature", faren);
+    Firebase.setFloat("devices/913/temperature", faren);
     oldfaren = faren;
     delay(1000);
     Firebase.pushFloat("temp_logs", faren);
@@ -141,12 +143,12 @@ void loop() {
 
 
   if (doorstate != olddorstate) {
-    Firebase.setBool("doorstate", doorstate);
-    olddoorstate = doorstate;
+    Firebase.setBool("devices/9/doorstate", doorstate);
+    olddorstate = doorstate;
     Firebase.pushBool("doorstate_logs", doorstate);
 
   }
-  int onoroff = Firebase.getInt("LIGHTPIN")
+  int onoroff = Firebase.getInt("LIGHTPIN");
   if ( LIGHTPIN != onoroff) {
   digitalWrite(LIGHTPIN , onoroff);
 }
