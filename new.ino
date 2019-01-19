@@ -11,10 +11,11 @@ dht DHT;
 #define LIGHTPIN 1 //Pin for light switch is on pin 1
 #define FIREBASE_HOST "soteria-589ca.firebaseio.com"
 #define FIREBASE_AUTH "43U33RvW6G7uyaKXnnXdvFcFrpAjqEs4UffXGiBn"
-#define WIFI_SSID ""
-#define WIFI_PASSWORD "!"
+#define WIFI_SSID "yeswifi"
+#define WIFI_PASSWORD "matthew1"
 
 struct
+
 {
   uint32_t total;
   uint32_t ok;
@@ -32,6 +33,7 @@ struct
 WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 Serial.print("connecting");
 while (WiFi.status() != WL_CONNECTED) {
+  Serial.begin(115200);
   Serial.print(".");
   delay(500);
 }
