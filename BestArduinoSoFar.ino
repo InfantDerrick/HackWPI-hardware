@@ -13,7 +13,16 @@ dht DHT;
 
 Servo myservo;
 int pos = 0;
-
+/*
+ * PIN LAYOUT:
+ * 1: Relay
+ * 4:Door Sensor
+ * 5: Temp/Humidity 
+ * 
+ * 14: Servo
+ * 
+ */
+ int in1 = 1;
 float oldfaren = 0.0;
 double InitialTemp = 73;
 float faren;
@@ -30,9 +39,10 @@ void setup() {
   pinMode(soundSensorPin, INPUT);
   pinMode(relayPin , OUTPUT);
   pinMode(doorSensorPin, INPUT);
+   myservo.attach(14);
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   Serial.print("connecting");
-  myservo.attach(14);
+
   while (WiFi.status() != WL_CONNECTED) {
     Serial.print(".");
     delay(500);
@@ -76,15 +86,18 @@ void loop() {
     Firebase.setFloat("devices/913/temperature", 1.8 * DHT.temperature + 32);
   }
 
+if (DHT.humidity > -1) {
+    Firebase.setFloat("devices/913/humidity", 1.8 * DHT.humidity);
+  }
 
-  boolean b = Firebase.getBool("devices/913/lightstate");
-  if (b) {
+  
+  if (Firebase.getBool("devices/913/lightstate")) {
     Serial.print("High");
-    digitalWrite(relayPin , !b ); // off Light
+    digitalWrite(relayPin , HIGH );
   }
   else {
     Serial.print("LOW");
-    digitalWrite(relayPin , b ); // On Light
+    digitalWrite(relayPin ,LOW );
   }
 
   doorSensorState = digitalRead(doorSensorPin);
